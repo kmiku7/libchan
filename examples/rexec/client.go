@@ -44,6 +44,7 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
+	// 同一对主机间连接是可以复用的.
 	sender, err := transport.NewSendChannel()
 	if err != nil {
 		log.Fatal(err)

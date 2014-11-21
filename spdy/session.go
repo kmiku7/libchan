@@ -68,6 +68,7 @@ func NewServerTransport(conn net.Conn) (*Transport, error) {
 	return newSession(conn, true)
 }
 
+// 三类map
 func newSession(conn net.Conn, server bool) (*Transport, error) {
 	var referenceCounter uint64
 	if server {
@@ -110,6 +111,7 @@ func (s *Transport) newStreamHandler(stream *spdystream.Stream) {
 		returnHeaders.Set("status", "400")
 		finish = true
 	} else {
+		// parentIDString区分了channel和stream
 		if parentIDString == "" {
 			byteStream := &byteStream{
 				referenceID: referenceID,
@@ -139,6 +141,8 @@ func (s *Transport) newStreamHandler(stream *spdystream.Stream) {
 				s.channelC.Broadcast()
 				s.channelC.L.Unlock()
 
+				// subchannel是没有方向概念的
+				// 怎么用是按照decode之后被sender还是recviver持有所决定的.
 				if parentID == 0 {
 					c.direction = inbound
 					s.receiverChan <- c
@@ -157,6 +161,8 @@ func (s *Transport) getByteStream(referenceID uint64) *byteStream {
 	bs, ok := s.byteStreams[referenceID]
 	if !ok {
 		s.byteStreamC.Wait()
+		// 此时若有其他复用连接的pipe,这里可能还是会失败的, 改成while?? 但是这里貌似又没有错误处理.
+		// 下面那个getChannel也一样.
 		bs, ok = s.byteStreams[referenceID]
 	}
 	s.byteStreamC.L.Unlock()

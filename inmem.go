@@ -17,6 +17,7 @@ func Pipe() (Receiver, Sender) {
 	return session.createPipe()
 }
 
+// 两类map
 type streamSession struct {
 	pipeLock    sync.Mutex
 	pipeCount   uint64
@@ -42,6 +43,7 @@ func createStreamSession() *streamSession {
 }
 
 func (s *streamSession) createPipe() (Receiver, Sender) {
+	// 单工
 	r, w := io.Pipe()
 	s.pipeLock.Lock()
 	pipeID := s.pipeCount + 1
@@ -56,6 +58,7 @@ func (s *streamSession) createPipe() (Receiver, Sender) {
 }
 
 func (s *streamSession) newByteStream() (io.ReadWriteCloser, error) {
+	// 双工
 	c1, c2 := net.Pipe()
 	bs := &byteStream{
 		Conn:        c1,

@@ -119,6 +119,7 @@ func (s *Transport) decodeStream(v reflect.Value, b []byte) error {
 	return nil
 }
 
+// decode byteStreamWriter
 func (s *Transport) decodeWrapper(v reflect.Value, b []byte) error {
 	bs := &byteStream{}
 	s.decodeStream(reflect.ValueOf(bs).Elem(), b)
@@ -127,6 +128,7 @@ func (s *Transport) decodeWrapper(v reflect.Value, b []byte) error {
 }
 
 func (s *Transport) waitConn(network, local, remote string, timeout time.Duration) (net.Conn, error) {
+	// 这里的timeoutChan是不是有问题,有两个goroutine监听了同一个timeout事件,而该事件只会被触发一次的.
 	timeoutChan := time.After(timeout)
 	connChan := make(chan net.Conn)
 
@@ -167,6 +169,8 @@ func (s *Transport) waitConn(network, local, remote string, timeout time.Duratio
 	}
 }
 
+// 这是有每个string的最长长度限制?
+// 因为长度用一个byte存储的
 func encodeString3(s1, s2, s3 string) ([]byte, error) {
 	if len(s1) > 0x7F || len(s2) > 0x7F || len(s3) > 0x7F {
 		return nil, errors.New("invalid string length")
@@ -181,6 +185,8 @@ func encodeString3(s1, s2, s3 string) ([]byte, error) {
 	return b, nil
 }
 
+// []byte -> string
+// 格式: struct { byte len; byte contents[];}
 func readString(b []byte) (int, string, error) {
 	if len(b) == 0 {
 		return 0, "", errors.New("invalid length")
@@ -193,7 +199,7 @@ func readString(b []byte) (int, string, error) {
 	copy(s, b[1:l+1])
 	return l + 1, string(s), nil
 }
-
+z
 func decodeString3(b []byte) (string, string, string, error) {
 	n, s1, err := readString(b)
 	if err != nil {
