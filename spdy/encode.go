@@ -199,7 +199,7 @@ func readString(b []byte) (int, string, error) {
 	copy(s, b[1:l+1])
 	return l + 1, string(s), nil
 }
-z
+
 func decodeString3(b []byte) (string, string, string, error) {
 	n, s1, err := readString(b)
 	if err != nil {
